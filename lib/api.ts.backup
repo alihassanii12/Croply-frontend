@@ -1,0 +1,425 @@
+import Cookies from "js-cookie";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// ── Token storage (cookies — survives page reload, accessible SSR-side too) ─
+
+const ACCESS_KEY = "croply_access";
+const REFRESH_KEY = "croply_refresh";
+
+export const tokens = {
+  getAccess: () => Cookies.get(ACCESS_KEY) ?? null,
+  getRefresh: () => Cookies.get(REFRESH_KEY) ?? null,
+  set: (access: string, refresh: string) => {
+    Cookies.set(ACCESS_KEY, access, { expires: 1, sameSite: "Lax" });
+    Cookies.set(REFRESH_KEY, refresh, { expires: 7, sameSite: "Lax" });
+  },
+  clear: () => {
+    Cookies.remove(ACCESS_KEY);
+    Cookies.remove(REFRESH_KEY);
+  },
+};
+
+// ── Core fetch wrapper ──────────────────────────────────────────────────────
+
+let isRefreshing = false;
+let refreshQueue: Array<(token: string | null) => void> = [];
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refresh = tokens.getRefresh();
+  if (!refresh) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/accounts/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    });
+    if (!res.ok) {
+      tokens.clear();
+      return null;
+    }
+    const data = await res.json();
+    Cookies.set(ACCESS_KEY, data.access, { expires: 1, sameSite: "Lax" });
+    if (data.refresh) {
+      Cookies.set(REFRESH_KEY, data.refresh, { expires: 7, sameSite: "Lax" });
+    }
+    return data.access as string;
+  } catch {
+    tokens.clear();
+    return null;
+  }
+}
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string>),
+  };
+
+  const access = tokens.getAccess();
+  if (access) headers["Authorization"] = `Bearer ${access}`;
+
+  // Don't set Content-Type for FormData — browser sets it with boundary
+  const isFormData = init.body instanceof FormData;
+  if (!isFormData && init.body && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  let res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+
+  // 401 → try refresh once
+  if (res.status === 401 && tokens.getRefresh()) {
+    let newAccess: string | null;
+
+    if (isRefreshing) {
+      newAccess = await new Promise<string | null>((resolve) => {
+        refreshQueue.push(resolve);
+      });
+    } else {
+      isRefreshing = true;
+      newAccess = await refreshAccessToken();
+      refreshQueue.forEach((cb) => cb(newAccess));
+      refreshQueue = [];
+      isRefreshing = false;
+    }
+
+    if (newAccess) {
+      headers["Authorization"] = `Bearer ${newAccess}`;
+      res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    } else {
+      // Refresh failed — redirect to login
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail =
+        body.detail ??
+        Object.values(body).flat().join(" ") ??
+        res.statusText;
+    } catch {
+      detail = res.statusText;
+    }
+    throw new Error(detail || `Request failed (${res.status})`);
+  }
+
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
+function json(method: string, body: unknown): RequestInit {
+  return {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
+export interface UserProfile {
+  role: "farmer" | "buyer";
+  phone: string;
+  location: string;
+  bio: string;
+  avatar_url: string;
+}
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  profile: UserProfile;
+}
+
+export interface AuthTokens {
+  access: string;
+  refresh: string;
+}
+
+export interface AuthResponse {
+  user: AuthUser;
+  access: string;
+  refresh: string;
+}
+
+export interface Farm {
+  id: number;
+  name: string;
+  location: string;
+  size_hectares: number | string;
+  description: string;
+  owner_name: string;
+  created_at: string;
+}
+
+export interface Crop {
+  id: number;
+  name: string;
+  farm: number;
+  farm_name: string;
+  planted_date: string;
+  status: string;
+  notes: string;
+  created_at: string;
+}
+
+export interface Disease {
+  id: number;
+  name: string;
+  display_name: string;
+  plant: string;
+  description: string;
+  symptoms: string;
+  treatment: string;
+  prevention: string;
+  is_healthy: boolean;
+}
+
+export interface TopPrediction {
+  class_name: string;
+  confidence: number;
+}
+
+export interface Scan {
+  id: number;
+  image: string;
+  predicted_class: string;
+  plant: string;
+  disease_name: string;
+  confidence: number;
+  top_predictions: TopPrediction[];
+  disease: number | null;
+  disease_detail: Disease | null;
+  created_at: string;
+  inference_error?: string;
+}
+
+export interface WeatherRecord {
+  id: number;
+  location: string;
+  temperature: number | string;
+  humidity: number | string;
+  rainfall: number | string;
+  recorded_at: string;
+}
+
+export interface Listing {
+  id: number;
+  title: string;
+  description: string;
+  price: number | string;
+  quantity: number | string;
+  unit: string;
+  contact: string;
+  is_active: boolean;
+  seller_id: number;
+  seller_name: string;
+  seller_avatar: string;
+  is_mine: boolean;
+  created_at: string;
+}
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface AnalyticsSummary {
+  total_scans: number;
+  healthy_scans: number;
+  diseased_scans: number;
+  total_farms: number;
+  total_crops: number;
+  total_listings: number;
+  disease_distribution: { name: string; count: number }[];
+  recent_scans: Scan[];
+}
+
+export interface Message {
+  id: number;
+  listing_id: number;
+  sender_id: number;
+  sender_name: string;
+  sender_avatar: string;
+  content: string;
+  created_at: string;
+  is_mine: boolean;
+}
+
+export interface PushSubscription {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+
+export const register = (data: {
+  email: string;
+  password: string;
+  first_name?: string;
+  last_name?: string;
+  role: "farmer" | "buyer";
+  phone?: string;
+  location?: string;
+}) => request<AuthResponse>("/api/accounts/register/", json("POST", data));
+
+export const login = (email: string, password: string) =>
+  request<AuthResponse>("/api/accounts/login/", json("POST", { email, password }));
+
+export const logout = (refresh: string) =>
+  request<void>("/api/accounts/logout/", json("POST", { refresh }));
+
+export const getMe = () => request<AuthUser>("/api/accounts/me/");
+
+export const updateMe = (data: Partial<AuthUser & UserProfile>) =>
+  request<AuthUser>("/api/accounts/me/", json("PATCH", data));
+
+export const googleAuth = (id_token: string, role?: "farmer" | "buyer") =>
+  request<AuthResponse>(
+    "/api/accounts/google/",
+    json("POST", { id_token, role })
+  );
+
+// ── Farms ───────────────────────────────────────────────────────────────────
+
+export const getFarms = () => request<Farm[]>("/api/farms/");
+export const getFarm = (id: number) => request<Farm>(`/api/farms/${id}/`);
+export const createFarm = (data: Partial<Farm>) =>
+  request<Farm>("/api/farms/", json("POST", data));
+export const updateFarm = (id: number, data: Partial<Farm>) =>
+  request<Farm>(`/api/farms/${id}/`, json("PATCH", data));
+export const deleteFarm = (id: number) =>
+  request<void>(`/api/farms/${id}/`, { method: "DELETE" });
+
+// ── Crops ────────────────────────────────────────────────────────────────────
+
+export const getCrops = () => request<Crop[]>("/api/crops/");
+export const getCrop = (id: number) => request<Crop>(`/api/crops/${id}/`);
+export const createCrop = (data: Partial<Crop>) =>
+  request<Crop>("/api/crops/", json("POST", data));
+export const updateCrop = (id: number, data: Partial<Crop>) =>
+  request<Crop>(`/api/crops/${id}/`, json("PATCH", data));
+export const deleteCrop = (id: number) =>
+  request<void>(`/api/crops/${id}/`, { method: "DELETE" });
+
+// ── Diseases ─────────────────────────────────────────────────────────────────
+
+export const getDiseases = () => request<Disease[]>("/api/diseases/");
+export const getDisease = (id: number) =>
+  request<Disease>(`/api/diseases/${id}/`);
+
+// ── Scans ─────────────────────────────────────────────────────────────────────
+
+export const getScans = () => request<Scan[]>("/api/scans/");
+export const getScan = (id: number) => request<Scan>(`/api/scans/${id}/`);
+export const createScan = (image: File) => {
+  const form = new FormData();
+  form.append("image", image);
+  return request<Scan>("/api/scans/", { method: "POST", body: form });
+};
+export const deleteScan = (id: number) =>
+  request<void>(`/api/scans/${id}/`, { method: "DELETE" });
+
+// ── Weather ───────────────────────────────────────────────────────────────────
+
+export interface LiveWeather {
+  location: string;
+  country: string;
+  temp: number;
+  feels_like: number;
+  temp_min: number;
+  temp_max: number;
+  humidity: number;
+  pressure: number;
+  description: string;
+  icon: string;
+  icon_url: string;
+  wind_speed: number;
+  wind_direction: string;
+  visibility: number;
+  cloudiness: number;
+  rain_1h: number;
+  sunrise: number;
+  sunset: number;
+  advisory: string;
+}
+
+export const getWeatherLive = (location?: string) =>
+  request<LiveWeather>(
+    `/api/weather/live/${location ? `?location=${encodeURIComponent(location)}` : ''}`
+  );
+
+export const getWeather = () => request<WeatherRecord[]>("/api/weather/");
+export const createWeather = (data: Partial<WeatherRecord>) =>
+  request<WeatherRecord>("/api/weather/", json("POST", data));
+export const updateWeather = (id: number, data: Partial<WeatherRecord>) =>
+  request<WeatherRecord>(`/api/weather/${id}/`, json("PATCH", data));
+export const deleteWeather = (id: number) =>
+  request<void>(`/api/weather/${id}/`, { method: "DELETE" });
+
+// ── Marketplace ───────────────────────────────────────────────────────────────
+
+export const getListings = () =>
+  request<Listing[]>("/api/marketplace/listings/");
+export const getListing = (id: number) =>
+  request<Listing>(`/api/marketplace/listings/${id}/`);
+export const createListing = (data: Partial<Listing>) =>
+  request<Listing>("/api/marketplace/listings/", json("POST", data));
+export const updateListing = (id: number, data: Partial<Listing>) =>
+  request<Listing>(`/api/marketplace/listings/${id}/`, json("PATCH", data));
+export const deleteListing = (id: number) =>
+  request<void>(`/api/marketplace/listings/${id}/`, { method: "DELETE" });
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+export const getNotifications = () =>
+  request<Notification[]>("/api/notifications/");
+export const markNotificationRead = (id: number) =>
+  request<Notification>(
+    `/api/notifications/${id}/`,
+    json("PATCH", { is_read: true })
+  );
+export const deleteNotification = (id: number) =>
+  request<void>(`/api/notifications/${id}/`, { method: "DELETE" });
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+export const getAnalyticsSummary = () =>
+  request<AnalyticsSummary>("/api/analytics/summary/");
+
+// ── Chat ─────────────────────────────────────────────────────────────────────
+
+export const getMessages = (listingId: number) =>
+  request<Message[]>(`/api/chat/conversations/${listingId}/messages/`);
+
+export const sendMessage = (listingId: number, content: string) =>
+  request<Message>(`/api/chat/conversations/${listingId}/messages/`, 
+    json("POST", { content }));
+
+export const pollMessages = (listingId: number, lastMessageId?: number) => {
+  const params = lastMessageId ? `?last_id=${lastMessageId}` : "";
+  return request<Message[]>(`/api/chat/conversations/${listingId}/messages/poll/${params}`);
+};
+
+// ── Push Notifications ───────────────────────────────────────────────────────
+
+export const subscribeToPush = (subscription: PushSubscription) =>
+  request<void>("/api/notifications/push/subscribe/", 
+    json("POST", { subscription }));
+
+export const unsubscribeFromPush = (endpoint: string) =>
+  request<void>("/api/notifications/push/unsubscribe/", 
+    json("POST", { endpoint }));

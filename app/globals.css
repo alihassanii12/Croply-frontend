@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Scrollbar Styles */
+
+/* Regular scrollbar - 8px */
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #d1d5db #f3f4f6; /* Firefox: thumb track */
+}
+
+*::-webkit-scrollbar {
+  width: 8px; /* Regular scrollbar width */
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+*::-webkit-scrollbar-track {
+  background: #f3f4f6; /* Light gray track */
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #d1d5db; /* Gray thumb */
+  border-radius: 4px;
+  border: 2px solid #f3f4f6; /* Creates padding effect */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af; /* Darker gray on hover */
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: #4b5563 #1f2937; /* Firefox: thumb track */
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: #1f2937; /* Dark gray track */
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: #4b5563; /* Medium gray thumb */
+    border: 2px solid #1f2937; /* Creates padding effect */
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* Lighter gray on hover */
+  }
+}
+
+/* Chat-specific scrollbar - 6px */
+.chat-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #d1d5db transparent; /* Firefox: thumb with transparent track */
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Thinner scrollbar for chat */
+  height: 6px; /* Horizontal scrollbar height */
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Transparent track */
+  border-radius: 3px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db; /* Gray thumb */
+  border-radius: 3px;
+  border: 1px solid transparent; /* Creates padding effect */
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af; /* Darker gray on hover */
+}
+
+/* Dark mode chat scrollbar */
+@media (prefers-color-scheme: dark) {
+  .chat-scrollbar {
+    scrollbar-color: #4b5563 transparent; /* Firefox: thumb with transparent track */
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563; /* Medium gray thumb */
+    border: 1px solid transparent; /* Creates padding effect */
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* Lighter gray on hover */
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0ea5e9 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #1e40af 100%);
+}
+
+/* Modern button styles */
+.btn-modern {
+  @apply relative overflow-hidden rounded-xl font-medium transition-all duration-300;
+}
+
+.btn-modern:before {
+  content: '';
+  @apply absolute inset-0 -translate-x-full bg-white/10 transition-transform duration-500;
+}
+
+.btn-modern:hover:before {
+  @apply translate-x-0;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply animate-pulse bg-gray-200 dark:bg-neutral-700 rounded;
+}
+
+/* Shimmer effect */
+.shimmer {
+  @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-[shimmer_1.5s_infinite];
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
