@@ -153,7 +153,7 @@ export function usePush(): UsePushReturn {
 
         // Create new subscription with retry mechanism
         subscription = await createSubscriptionWithRetry(registration);
-clear      }
+      }
 
       if (subscription) {
         console.log("🔔 Push: Sending subscription to server...");
