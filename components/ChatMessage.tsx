@@ -2,7 +2,7 @@
 
 import { Message } from "@/lib/api";
 import { formatDate } from "@/components/ui";
-import { Check, CheckCheck, Image as ImageIcon, Mic, Play, Pause } from "lucide-react";
+import { Check, CheckCheck, Image as ImageIcon, Mic, Play, Pause, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { formatDuration } from "@/lib/mediaUtils";
 
