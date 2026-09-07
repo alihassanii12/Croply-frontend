@@ -34,17 +34,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 animate-fade-in">
             {children}
           </main>
-          <footer className="border-t border-green-900/10 bg-white/50 py-4 text-center text-xs text-gray-500 backdrop-blur-sm dark:border-green-100/10 dark:bg-neutral-900/50">
-            <div className="mx-auto max-w-7xl px-4">
-              <span className="inline-flex items-center gap-1.5">
-                <Leaf className="h-3.5 w-3.5 text-green-500 animate-pulse-glow" />
-                Croply — plant disease detection &amp; farm management
-              </span>
-              <div className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">
-                Made with ❤️ for farmers worldwide
-              </div>
-            </div>
-          </footer>
         </AuthProvider>
       </body>
     </html>

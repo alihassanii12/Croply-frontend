@@ -247,7 +247,6 @@ export default function GoogleCallbackPage() {
               Just a few more details to personalise your experience.
             </p>
           </div>
-          <p className="text-xs text-green-600">© {new Date().getFullYear()} Croply</p>
         </div>
 
         {/* Form */}

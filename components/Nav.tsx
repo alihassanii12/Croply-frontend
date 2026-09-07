@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  LayoutDashboard, ScanSearch, Bug, Tractor,
+  LayoutDashboard, ScanSearch, Tractor,
   ShoppingCart, Bell, Leaf, Menu, X,
   LogOut, LogIn, UserPlus, MessageCircle,
 } from "lucide-react";
@@ -13,7 +13,6 @@ import { useAuth } from "@/lib/auth";
 const FARMER_LINKS = [
   { href: "/",              label: "Dashboard",    icon: LayoutDashboard },
   { href: "/scan",          label: "Scan",         icon: ScanSearch },
-  { href: "/diseases",      label: "Diseases",     icon: Bug },
   { href: "/farms",         label: "Farm Manager", icon: Tractor },
   { href: "/marketplace",   label: "Marketplace",  icon: ShoppingCart },
   { href: "/chats",        label: "Chats",        icon: MessageCircle },
