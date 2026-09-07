@@ -68,18 +68,22 @@ export default function ChatMessage({ message, isMine, showAvatar = true }: Chat
             <div className="space-y-2">
               {message.image_url && (
                   <div
-                      className="relative cursor-pointer rounded-lg overflow-hidden max-w-xs"
+                      className="relative cursor-pointer overflow-hidden rounded-lg max-w-[280px] sm:max-w-xs md:max-w-sm"
                       onClick={() => setImageModalOpen(true)}
                   >
                     <img
                         src={message.image_url}
                         alt="Shared image"
                         className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/images/placeholder-image.png';
+                        }}
                     />
                   </div>
               )}
               {message.body && (
-                  <div className="text-sm text-gray-900 dark:text-gray-100">
+                  <div className="text-sm text-gray-900 dark:text-gray-100 break-words">
                     {message.body}
                   </div>
               )}
@@ -90,17 +94,17 @@ export default function ChatMessage({ message, isMine, showAvatar = true }: Chat
                       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
                       onClick={() => setImageModalOpen(false)}
                   >
-                    <div className="relative max-w-4xl max-h-full">
+                    <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
                       <img
                           src={message.image_url}
                           alt="Full image"
-                          className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                          className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                       />
                       <button
                           onClick={() => setImageModalOpen(false)}
-                          className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+                          className="absolute -top-2 -right-2 rounded-full bg-white p-2 text-gray-800 hover:bg-gray-100 shadow-lg sm:top-4 sm:right-4"
                       >
-                        ✕
+                        <X className="h-5 w-5" />
                       </button>
                     </div>
                   </div>
@@ -175,9 +179,9 @@ export default function ChatMessage({ message, isMine, showAvatar = true }: Chat
   };
 
   return (
-      <div className={`flex gap-3 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div className={`flex gap-2 sm:gap-3 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
         {showAvatar && !isMine && (
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+            <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
               {message.sender_avatar ? (
                   <img src={message.sender_avatar} alt={message.sender_name} className="w-full h-full object-cover" />
               ) : (
@@ -188,9 +192,9 @@ export default function ChatMessage({ message, isMine, showAvatar = true }: Chat
             </div>
         )}
 
-        {!showAvatar && !isMine && <div className="w-8" />}
+        {!showAvatar && !isMine && <div className="w-6 sm:w-8" />}
 
-        <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[70%]`}>
+        <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[70%]`}>
           {!isMine && showAvatar && (
               <span className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-1">
             {message.sender_name}
@@ -198,7 +202,7 @@ export default function ChatMessage({ message, isMine, showAvatar = true }: Chat
           )}
 
           <div
-              className={`rounded-2xl px-4 py-2 ${
+              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-2 ${
                   isMine
                       ? 'bg-green-600 text-white dark:bg-green-700'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'

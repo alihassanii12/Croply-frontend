@@ -107,14 +107,14 @@ function ScanContent() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Upload panel */}
-        <div className="space-y-4">
+        <div className="order-2 space-y-4 lg:order-1">
           <Card>
             {/* Drop zone */}
             <div
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onClick={() => !file && inputRef.current?.click()}
-              className={`flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed transition-colors ${
+              className={`flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed transition-colors sm:min-h-56 lg:min-h-64 ${
                 file
                   ? "border-green-400 bg-green-50 dark:bg-green-950/20"
                   : "border-gray-300 bg-gray-50 hover:border-green-400 hover:bg-green-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-green-600 dark:hover:bg-green-950/20"
@@ -126,7 +126,7 @@ function ScanContent() {
                   <img
                     src={preview}
                     alt="Preview"
-                    className="mx-auto max-h-56 rounded-lg object-contain"
+                    className="mx-auto max-h-44 rounded-lg object-contain sm:max-h-52 lg:max-h-60"
                   />
                   <button
                     onClick={(e) => {
@@ -141,8 +141,8 @@ function ScanContent() {
                 </div>
               ) : (
                 <>
-                  <ImagePlus className="h-10 w-10 text-gray-400" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <ImagePlus className="h-8 w-8 text-gray-400 sm:h-10 sm:w-10" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
                     Drag &amp; drop or click to select an image
                   </p>
                   <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
@@ -161,7 +161,7 @@ function ScanContent() {
               }}
             />
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:gap-3">
               <button
                 onClick={handleScan}
                 disabled={!file || uploading}
@@ -209,8 +209,8 @@ function ScanContent() {
               {result.inference_error ? (
                 <ErrorBanner message={result.inference_error} />
               ) : (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="rounded-lg bg-gray-50 p-3 dark:bg-neutral-800">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Plant
@@ -241,16 +241,16 @@ function ScanContent() {
                       <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                         Top predictions
                       </p>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {result.top_predictions.slice(0, 3).map((p) => (
                           <div key={p.class_name}>
-                            <div className="mb-0.5 flex items-center justify-between text-xs">
+                            <div className="mb-1 flex items-center justify-between text-xs">
                               <span className="truncate text-gray-700 dark:text-gray-300">
                                 {p.class_name
                                   .replaceAll("___", " — ")
                                   .replaceAll("_", " ")}
                               </span>
-                              <span className="ml-2 text-gray-500">
+                              <span className="ml-2 shrink-0 text-gray-500">
                                 {Math.round(p.confidence * 100)}%
                               </span>
                             </div>
@@ -262,7 +262,7 @@ function ScanContent() {
                   )}
 
                   {result.disease_detail && (
-                    <div className="rounded-lg bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
+                    <div className="rounded-lg bg-amber-50 p-4 text-sm dark:bg-amber-900/20">
                       <p className="font-medium text-amber-800 dark:text-amber-300">
                         Treatment
                       </p>
@@ -278,9 +278,9 @@ function ScanContent() {
         </div>
 
         {/* History */}
-        <div>
-          <h2 className="mb-3 text-lg font-semibold text-green-950 dark:text-green-100">
-            Scan History
+        <div className="order-1 lg:order-2">
+          <h2 className="mb-4 text-lg font-semibold text-green-950 dark:text-green-100">
+            Recent Scans
           </h2>
 
           {loading ? (
@@ -293,40 +293,55 @@ function ScanContent() {
               icon={<Microscope className="h-7 w-7" />}
             />
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
               {scans.map((scan) => (
-                <Card key={scan.id} className="flex items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={scan.image}
-                    alt={scan.predicted_class}
-                    className="h-14 w-14 shrink-0 rounded-lg object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      {isHealthy(scan) ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-500" />
-                      ) : (
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                      )}
-                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {scan.plant} — {scan.disease_name}
-                      </p>
+                <Card key={scan.id} className="group overflow-hidden">
+                  <div className="flex gap-3 p-4">
+                    <div className="relative flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={scan.image}
+                        alt={scan.predicted_class}
+                        className="h-16 w-16 rounded-lg object-cover sm:h-20 sm:w-20"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                      {formatDate(scan.created_at)}
-                    </p>
-                    <div className="mt-1">
-                      <ConfidenceBar value={scan.confidence ?? 0} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-1.5">
+                            {isHealthy(scan) ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-500" />
+                            ) : (
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                            )}
+                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                              {scan.plant}
+                            </p>
+                          </div>
+                          <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">
+                            {scan.disease_name}
+                          </p>
+                          <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                            {formatDate(scan.created_at)}
+                          </p>
+                          <div className="w-full">
+                            <ConfidenceBar value={scan.confidence ?? 0} />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDelete(scan.id)}
+                          className="rounded-lg p-1.5 text-gray-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-red-900/20"
+                          aria-label="Delete scan"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDelete(scan.id)}
-                    className="shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
-                    aria-label="Delete scan"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </Card>
               ))}
             </div>

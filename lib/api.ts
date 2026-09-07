@@ -454,9 +454,15 @@ export const getMessages = (listingId: number) =>
   request<Message[]>(`/api/chat/?listing=${listingId}`);
 
 export const sendMessage = (listingId: number, body: string, recipientId?: number) => {
-  const data: any = { body, message_type: 'text' };
-  if (recipientId) data.recipient = recipientId;
-  return request<Message>(`/api/chat/?listing=${listingId}`, json("POST", data));
+  const formData = new FormData();
+  formData.append('body', body);
+  formData.append('message_type', 'text');
+  if (recipientId) formData.append('recipient', String(recipientId));
+  
+  return request<Message>(`/api/chat/?listing=${listingId}`, {
+    method: 'POST',
+    body: formData,
+  });
 };
 
 export const sendImageMessage = (listingId: number, image: File, recipientId?: number) => {

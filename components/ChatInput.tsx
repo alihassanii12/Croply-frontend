@@ -207,32 +207,32 @@ export default function ChatInput({
 
   if (isRecording) {
     return (
-        <div className="flex items-center gap-3 p-4 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
-          <div className="flex-1 flex items-center gap-3">
-            <div className="flex items-center gap-2 text-red-500">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <Mic className="w-5 h-5" />
+        <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
+          <div className="flex-1 flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-red-500">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse" />
+              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
               Recording: {formatDuration(recordingDuration)}
             </div>
           </div>
 
           <button
               onClick={handleCancelRecording}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               title="Cancel"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
               onClick={handleStopRecording}
               disabled={sending}
-              className="p-3 bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50"
+              className="p-2 sm:p-3 bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50"
               title="Send"
           >
-            <StopCircle className="w-5 h-5" />
+            <StopCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
     );
@@ -247,24 +247,24 @@ export default function ChatInput({
         )}
 
         {imagePreview && (
-            <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-neutral-700">
               <div className="relative inline-block">
                 <img
                     src={imagePreview}
                     alt="Preview"
-                    className="max-h-32 rounded-lg"
+                    className="max-h-24 sm:max-h-32 rounded-lg"
                 />
                 <button
                     onClick={clearImage}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
         )}
 
-        <div className="flex items-end gap-2 p-4">
+        <div className="flex items-end gap-2 p-3 sm:gap-3 sm:p-4">
           <input
               ref={fileInputRef}
               type="file"
@@ -276,19 +276,19 @@ export default function ChatInput({
           <button
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || sending || !!imagePreview}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
+              className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
               title="Send image"
           >
-            <ImageIcon className="w-5 h-5" />
+            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
               onClick={handleStartRecording}
               disabled={disabled || sending || !!imagePreview}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
+              className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
               title="Send voice message"
           >
-            <Mic className="w-5 h-5" />
+            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <textarea
@@ -297,7 +297,7 @@ export default function ChatInput({
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
               disabled={disabled || sending || !!imagePreview}
-              className={`${inputCls} flex-1 resize-none min-h-[40px] max-h-[120px]`}
+              className={`${inputCls} flex-1 resize-none min-h-[36px] sm:min-h-[40px] max-h-[100px] sm:max-h-[120px] text-sm sm:text-base`}
               rows={1}
           />
 
