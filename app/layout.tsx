@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import KeepAliveService from "@/components/KeepAliveService";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/lib/auth";
 import { Leaf } from "lucide-react";
 
@@ -31,12 +32,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-gradient-to-br from-green-50/50 via-white to-teal-50/30 dark:from-neutral-950 dark:via-neutral-950 dark:to-emerald-950/20">
         <ServiceWorkerRegistration />
         <KeepAliveService />
-        <AuthProvider>
-          <Nav />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 animate-fade-in">
-            {children}
-          </main>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <Nav />
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 animate-fade-in">
+              {children}
+            </main>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

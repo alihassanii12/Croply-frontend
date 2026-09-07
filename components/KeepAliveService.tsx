@@ -18,14 +18,16 @@ export default function KeepAliveService() {
           signal: AbortSignal.timeout(15000),
         });
 
-        if (response.ok) {
-          console.log('🔄 Model server keep-alive ping successful');
-        } else {
+        // Silent success - no logging in production
+        if (!response.ok && process.env.NODE_ENV === 'development') {
           console.log('⚠️ Model server ping failed:', response.status);
         }
       } catch (error) {
-        // Silently fail - don't spam console
-        console.log('⏳ Model server ping failed - might be starting up');
+        // Completely silent - no console spam
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏳ Model server ping failed - might be starting up');
+        }
       }
     };
 
@@ -37,7 +39,10 @@ export default function KeepAliveService() {
       // Then ping every 8 minutes
       intervalId = setInterval(pingServer, PING_INTERVAL);
       
-      console.log('🚀 Keep-alive service started for model API');
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Keep-alive service started for model API');
+      }
     };
 
     startKeepAlive();
@@ -46,7 +51,6 @@ export default function KeepAliveService() {
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
-        console.log('🛑 Keep-alive service stopped');
       }
     };
   }, []);
